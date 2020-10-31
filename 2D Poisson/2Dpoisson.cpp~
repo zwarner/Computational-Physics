@@ -1,0 +1,172 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cmath>
+#include <stdlib.h>
+#include <TGraph.h>
+#include <TCanvas.h>
+#include <TAxis.h>
+
+using namespace std;
+
+//Zach Warner
+//Proj. IV homework
+/*This program solves a 2-Dimensional Poisson Problem with Mixed Boundry conditions for rho(x)=y(1-y)x^3
+*/
+
+double pi=atan(1)*4;
+/*
+//Solves the 2D poissson equation in 1D
+double * Poisson2Dto1D(double alphal,double alphah,double betal,double betah,double gammal,double gammah,double dx,double yf,double *rho,int k)
+{
+  int N = 1000;
+  int M = 1000;
+  double arg = k*pi*dx/yf;
+  double a[N];
+  double b[N];
+  double c[N];
+  double w[N];
+  double xi[N];
+  double eta[N];
+  double u[N];
+
+  for(int i = 1; i < N ; i++)
+    {
+      a[i]   = 1;
+      b[i]   = -(2 + pow(arg,2));
+      c[i]   = 1;
+      w[i]   = rho[i] * pow(dx,2);
+    }
+       
+  a[1]   = 0;
+  c[N-1] = 0;
+  b[1]   = -(2 + pow(arg,2)) - betal/(alphal*dx - betal);
+  b[N-2] = -(2 + pow(arg,2)) + betah/(alphah*dx + betah);
+  w[1]   = rho[1] * pow(dx,2) - (gammal * dx) / (alphal * dx - betal);
+  w[N-2] = rho[N-2] * pow(dx,2) - (gammah * dx) / (alphah * dx + betah);
+
+  xi[N-2]  = -a[N-2]/b[N-2];
+  xi[1]    = 0;
+  eta[N-2] = w[N-2]/b[N-2];
+  eta[1]   = (w[1] - c[1] * eta[2]) / (b[1] + c[1] * xi[2]);
+
+  for (int i = N-3; i > 0; i--)
+    {
+      xi[i]  = -a[i] / (b[i] + c[i] * xi[i+1]);
+      eta[i] = (w[i] - c[i] * eta[i+1]) / (b[i] + c[i] * xi[i+1]);
+    }
+
+  u[0] = 0;  
+  for (int i = 1; i < N; i++)
+    {
+      u[i] = xi[i] * u[i-1] + eta[i];
+    }
+  
+  return u; 
+}*/
+
+
+int main()
+{
+
+  double test_u[1000];
+  double test_x[1000];
+  double test_y[1000];
+  double tempx;
+  double tempy;
+  double temp_x;
+  double temp_y;
+  double h = 0.01;
+ 
+  //  ***  part A ***
+  int N = 1000;
+  int M = 1000;
+
+  double alphal = 1.0;
+  double alphah = 1.0;
+  double betal  = 0.0;
+  double betah  = 0.0;
+  double gammal[M], gammalhat[M], tempgammalhat;
+  double gammah[M], gammahhat[M], tempgammahhat;
+  double rho[N][M], rhohat[N][M];
+  
+
+  double dx = 1.0/N;
+  double dy = 1.0/M;
+  double x[N];
+  double y[M];
+
+  //Mesh
+  tempx = 0;
+  tempy = 0;
+  for (int i = 0; i == N; i++)
+    {
+      tempx = tempx + i * dx;
+      x[i]  = tempx;
+    }
+  for (int i = 0; i == M; i++)
+    {
+      tempy = tempy + i * dy;
+      y[i]  = tempy;  
+    }
+
+  for(int i = 0 ; i < N ; i++)
+    {
+      for(int j = 0 ; j < M ; j++)
+	{
+	  rho[N][M] = 6*x[i]*y[j] * (1-y[j]) - 2*pow(x[i],3);
+	}
+    }
+
+  //loop for gammalhat FFT
+  for(int k = 1 ; k < M ; k++)
+    {
+      tempgammalhat = 0;
+      for(int m = 1 ; m < M; m++)
+	{
+	  tempgammalhat = tempgammalhat + gammal[m] * sin( (m*k*pi) / M );
+	}
+      gammalhat[k]=tempgammalhat;
+      cout << gammalhat[k] << endl;
+    }
+  
+  //loop for gammahhat FFt
+  //loop for rhohat FFT
+  //loop for w from rhohat
+  //1D poisson solver for uhat FFT
+  
+  
+  //loop of annalytical solution for compariosn with solution generated from poison solver
+  temp_x=0.5;
+  temp_y=0.0;
+  for(int i =0; i<N;i++)
+    {
+      test_y[i] = temp_y;
+      test_u[i] = 6*temp_x*temp_y * (1-temp_y) - 2*pow(temp_x,3);
+      temp_y = temp_y+h;
+    }
+
+
+  
+ //This section is for graphing
+
+   TGraph *gr1 = new TGraph(N-1,test_y,test_u);
+   TAxis *axis = gr1->GetXaxis();
+
+   gr1->Draw("AC");//Draws forward historesis loop
+   axis->SetLimits(0,1); //x-axis
+   gr1->GetHistogram()->SetMaximum(1);//y-axis
+   gr1->GetHistogram()->SetMinimum(0);
+   gr1->GetXaxis()->SetTitle("y"); 
+   gr1->GetYaxis()->SetTitle("u(x,y)");
+   gr1->GetXaxis()->CenterTitle();
+   gr1->GetYaxis()->CenterTitle();
+   gr1->SetTitle("Solution to Poisson Equation (Analytical) x = 0.5");
+   gr1->SetLineColor(4);
+   gr1->SetMarkerColor(4);
+   gr1->Draw("AC");
+    
+
+  return 0;
+  
+}
