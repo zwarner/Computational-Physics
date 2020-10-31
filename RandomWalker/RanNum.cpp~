@@ -1,0 +1,57 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cmath>
+#include <stdlib.h>
+#include <TGraph.h>
+#include <TCanvas.h>
+#include <TAxis.h>
+
+using namespace std;
+
+//Zach Warner
+//Proj. V homework
+/*This program generates Gaussian Random numbers and simlates random walks in one dimension
+*/
+
+double pi = atan(1)*4;
+
+int main()
+{
+  int N = 10;
+  double  x1[N], x2[N], y[N];
+  double y0 = 0;
+  double sig = 1;
+
+  //loop for Gaussian Random number generator
+  for(int = 0; i < N; i++)
+    {
+      x1[i] = rand();
+      x2[i] = rand();
+      cout << x1[i] << "  " << x2[i] << endl;
+    }
+
+
+  
+ //This section is for graphing
+
+   TGraph *gr1 = new TGraph(N-1,test_x,test_u);
+   TAxis *axis = gr1->GetXaxis();
+
+   gr1->Draw("AC");//Draws forward historesis loop
+   axis->SetLimits(0,1); //x-axis
+   gr1->GetHistogram()->SetMaximum(1);//y-axis
+   gr1->GetHistogram()->SetMinimum(0.5);
+   gr1->GetXaxis()->SetTitle("x"); 
+   gr1->GetYaxis()->SetTitle("u(x)");
+   gr1->GetXaxis()->CenterTitle();
+   gr1->GetYaxis()->CenterTitle();
+   gr1->SetTitle("Solution to Poisson Equation (Analytical)");
+   gr1->SetLineColor(4);
+   gr1->SetMarkerColor(4);
+   gr1->Draw("AC");
+    
+
+  return 0;
+  
+}
