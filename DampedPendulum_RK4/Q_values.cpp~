@@ -1,0 +1,213 @@
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <cmath>
+#include <stdlib.h>
+#include <TGraph.h>
+#include <TCanvas.h>
+#include <TAxis.h>
+
+using namespace std;
+
+
+//Zach Warner
+//Project III
+/*This program solves the damped driven pendulum using RK4 method and does the following:
+(1) Calculates the first three perieod-doubling bifurcation. Plot the bifurcation in parameter space and in phase space. 
+(2) calculate the frequency power spectrum for the obrit 
+(3) Calculate and plot a chaoitic orbit and its frequency spectrum
+*/
+
+
+double pi=atan(1.0)*4.0;
+double pi2=atan(1.0)*8.0;
+
+
+double f1(double v, double theta,double t,double Q)
+{
+  double mu = 1/Q;
+  double a = 1.5;
+  double nu = 2.0/3.0;
+ return -mu*v-sin(theta)+a*cos(nu*t);
+}
+	 
+int main()
+{
+
+  //fourier transform
+  double N=20000; //number of steps
+  double t_ft_graph[40000];
+  double y_graph[40000];
+  double P_graph[39999], w_graph[39999];
+  double t = 0;
+  double A[39999],B[39999],P[39999],w[39999],f[39999];
+  double temp,tempA,tempB,tempf, tempw;
+
+  //rk4
+  int i,count;
+  double x0,t0,xt,a,mu,nu,v0,E0,b0,Q,v_bi;
+  double h;// step size RK4
+  double x_RK4[5],v_RK4[5];
+  double h2,t1,t2;
+  double n; // number of steps for RK4
+  double x_graph[30001],v_graph[30001],t_graph[30001],steps[30001],E_graph[30001];
+  double v_update,x_update;
+  double x[30001];
+  double v[30001],vft[30001];
+  double b[30001];
+  double x_bi[27],Q_bi[27];
+  double temp_t,temp_x,temp_v;
+  double k1,k2,k3,k4,l1,l2,l3,l4; //k-values to be used in the RK4 method
+ 
+  Q=1.34;
+    x0 = 0;    // Initial angle
+    t0 = 0;    // Initial time
+    v0 = 0;  // Initial angular velocity
+    a=0.1;
+    mu=.5;
+    nu=3.0;
+    t1=0;
+    t2=300;
+    h=.01;
+    n=(t2-t1)/h;
+    b0=a*sqrt(pow(nu,2)*pow(mu,2)+pow((1-pow(nu,2)),2));
+    
+    h2 = 0.5*h;  // used in RK4 method
+  
+    
+    x[0] = x0;//inital conditions for angle
+    v[0] = v0;//i.c. angular velocity
+    temp_t=0;
+
+      
+      for(int j=0;j<n;j++)   // RK 4th order method
+      {
+	temp_v=v[j];
+	temp_x=x[j];
+	steps[j]=j;
+	
+	if(temp_t>100) //eliminating transient motion
+	{
+	  i=j-10000;
+	  vft[i]=temp_v;
+	  x_graph[i]=x[j]/pi;
+	  v_graph[i]=v[j]/1.5;
+	  
+	}
+	
+        k1=h*v[j];
+	l1=h*f1(temp_v,temp_x,temp_t,Q);
+        k2=h*(v[j]+.5*l1);
+	l2=h*f1(temp_v+.5*l1,temp_x+.5*k1,temp_t+h2,Q);
+        k3=h*(v[j]+.5*l2);
+	l3=h*f1(temp_v+.5*l2,temp_x+.5*k2,temp_t+h2,Q);
+        k4=h*(v[j]+l3);
+	l4=h*f1(temp_v+l3,temp_x+k3,temp_t+h,Q);
+        x[j+1]=(x[j]+(k1+2*k2+2*k3+k4)/6);
+        v[j+1]=(v[j]+(l1+2*l2+2*l3+l4)/6);
+        
+	t_graph[j]=temp_t;
+	temp_t=temp_t+h;
+	
+       }
+
+      /*  Q_bi[0]=1.34;
+	Q_bi[1]=1.345;
+	Q_bi[2]=1.345;
+	Q_bi[3]=1.35;
+	Q_bi[4]=1.35;
+	Q_bi[5]=1.355;
+	Q_bi[6]=1.355;
+	Q_bi[7]=1.36;
+	Q_bi[8]=1.36;
+	Q_bi[9]=1.367;
+	Q_bi[10]=1.367;
+	Q_bi[11]=1.37;
+	Q_bi[12]=1.37;
+	Q_bi[13]=1.37;
+	Q_bi[14]=1.37;
+	Q_bi[15]=1.3735;
+	Q_bi[16]=1.3735;
+	Q_bi[17]=1.3735;
+	Q_bi[18]=1.3735;
+	Q_bi[19]=1.3754;
+	Q_bi[20]=1.3754;
+	Q_bi[21]=1.3754;
+	Q_bi[22]=1.3754;
+	Q_bi[23]=1.3754;
+	Q_bi[24]=1.3754;
+	Q_bi[25]=1.3754;
+	Q_bi[26]=1.3754;
+	x_bi[0]=0.56;
+	x_bi[1]=0.555;
+	x_bi[2]=0.565;
+	x_bi[3]=0.535;
+	x_bi[4]=0.585;
+	x_bi[5]=0.51;
+	x_bi[6]=0.62;
+	x_bi[7]=.498;
+	x_bi[8]=.64;
+	x_bi[9]=.47;
+	x_bi[10]=.655;
+	x_bi[11]=.464;
+	x_bi[12]=.472;
+	x_bi[13]=.651;
+	x_bi[14]=.66;
+	x_bi[15]=.442;
+	x_bi[16]=.478;
+	x_bi[17]=.61;
+	x_bi[18]=.688;
+	x_bi[19]=.425;
+	x_bi[20]=.438;
+	x_bi[21]=.466;
+	x_bi[22]=.488;
+	x_bi[23]=.59;
+	x_bi[24]=.62;
+	x_bi[25]=.68;
+	x_bi[26]=.71;*/
+	
+
+     for(int n = 0; n<N-2; n++)//forward Fourier transform
+    {
+      tempA=0;
+      tempB=0;
+      tempw=(pi2*n)/N;
+
+      for(int k=0; k<N-2; k++)
+	{
+	  temp = tempw*k;
+	  tempA = tempA + v_graph[k]*cos(temp);
+	  tempB = tempB - v_graph[k]*sin(temp);
+	}
+      
+      A[n] = tempA;
+      B[n] = tempB;
+      P[n] = pow(tempA,2) + pow(tempB,2);
+      P_graph[n]=log10(P[n]);
+      w_graph[n] = tempw/(pi2);
+      cout << P_graph[n] <<endl;
+      }
+
+  
+    
+ //This section is for graphing
+
+   TGraph *gr1 = new TGraph(N-2,w_graph,P_graph);
+   TAxis *axis = gr1->GetXaxis();
+
+   // gr1->Draw("AC");//Draws forward historesis loop
+   axis->SetLimits(0,1); //x-axis
+   gr1->GetHistogram()->SetMaximum(10);//y-axis
+   gr1->GetHistogram()->SetMinimum(0);
+   gr1->GetXaxis()->SetTitle("Q"); 
+   gr1->GetYaxis()->SetTitle("v/a");
+   gr1->GetXaxis()->CenterTitle();
+   gr1->GetYaxis()->CenterTitle();
+   gr1->SetTitle("Bifurcation Diagram a=1.5, nu=2/3");
+   gr1->SetLineColor(0);
+   gr1->SetMarkerColor(4);
+   gr1->Draw("AC*");
+  
+  return 0;
+  
+}
